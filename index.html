@@ -1,4 +1,4 @@
-html_content = """<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -86,8 +86,7 @@ html_content = """<!DOCTYPE html>
             cursor: pointer;
         }
 
-        .filter-option input[type="radio"],
-        .filter-option input[type="checkbox"] {
+        .filter-option input[type="radio"] {
             margin-right: 0.8rem;
             width: 16px;
             height: 16px;
@@ -422,7 +421,7 @@ html_content = """<!DOCTYPE html>
 
         // 숫자 콤마 포맷팅 함수
         function formatNumber(num) {
-            return num.toString().replace(/\\B(?=(\\d{3})+(?!\\d))/g, ",");
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
 
         // 아이템 렌더링 함수
@@ -501,9 +500,3 @@ html_content = """<!DOCTYPE html>
     </script>
 </body>
 </html>
-"""
-
-with open("/mnt/data/stylepicker_recommendation.html", "w", encoding="utf-8") as f:
-    f.write(html_content)
-
-print("[file-tag: stylepicker_recommendation.html]")
