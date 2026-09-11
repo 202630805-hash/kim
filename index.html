@@ -1,0 +1,509 @@
+html_content = """<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StylePicker - 맞춤형 착장 추천</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #e74c3c;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --border-color: #e9ecef;
+            --text-main: #212529;
+            --text-muted: #6c757d;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: var(--card-bg);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            letter-spacing: -0.5px;
+        }
+
+        .container {
+            display: flex;
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            gap: 2rem;
+        }
+
+        /* Sidebar / Filters */
+        .sidebar {
+            flex: 0 0 300px;
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            height: fit-content;
+        }
+
+        .filter-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-group h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.8rem;
+            color: var(--secondary-color);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .filter-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+        }
+
+        .filter-option input[type="radio"],
+        .filter-option input[type="checkbox"] {
+            margin-right: 0.8rem;
+            width: 16px;
+            height: 16px;
+            accent-color: var(--primary-color);
+        }
+
+        .apply-btn {
+            width: 100%;
+            padding: 1rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 1rem;
+        }
+
+        .apply-btn:hover {
+            background-color: var(--secondary-color);
+        }
+
+        /* Main Content / Results */
+        .main-content {
+            flex: 1;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .results-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .results-count {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .outfit-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        /* Outfit Card */
+        .outfit-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .outfit-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .outfit-image {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            object-position: top;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .outfit-info {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .tag {
+            background-color: var(--bg-color);
+            color: var(--text-muted);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border: 1px solid var(--border-color);
+        }
+
+        .clothing-items {
+            list-style: none;
+            margin-bottom: 1.5rem;
+            flex-grow: 1;
+        }
+
+        .clothing-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+            font-size: 0.95rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        .clothing-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .item-brand {
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-right: 0.5rem;
+        }
+
+        .item-name {
+            color: var(--text-main);
+        }
+
+        .item-price {
+            color: var(--text-muted);
+            font-weight: 500;
+            white-space: nowrap;
+            margin-left: 1rem;
+        }
+
+        .total-price {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 2px solid var(--border-color);
+            margin-top: auto;
+        }
+
+        .total-label {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .total-amount {
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--accent-color);
+        }
+
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 4rem 2rem;
+            background: var(--card-bg);
+            border-radius: 12px;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                flex-direction: column;
+            }
+            .sidebar {
+                flex: none;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>StylePicker <span style="font-size:1rem; font-weight:400; color:#6c757d; margin-left:10px;">나만의 맞춤형 착장 추천</span></h1>
+    </header>
+
+    <div class="container">
+        <!-- 필터 사이드바 -->
+        <aside class="sidebar">
+            <form id="filterForm">
+                <div class="filter-group">
+                    <h3>성별</h3>
+                    <label class="filter-option"><input type="radio" name="gender" value="all" checked> 전체</label>
+                    <label class="filter-option"><input type="radio" name="gender" value="male"> 남성</label>
+                    <label class="filter-option"><input type="radio" name="gender" value="female"> 여성</label>
+                </div>
+
+                <div class="filter-group">
+                    <h3>키 (cm)</h3>
+                    <label class="filter-option"><input type="radio" name="height" value="all" checked> 전체</label>
+                    <label class="filter-option"><input type="radio" name="height" value="under_160"> 160 미만</label>
+                    <label class="filter-option"><input type="radio" name="height" value="160_169"> 160 ~ 169</label>
+                    <label class="filter-option"><input type="radio" name="height" value="170_179"> 170 ~ 179</label>
+                    <label class="filter-option"><input type="radio" name="height" value="over_180"> 180 이상</label>
+                </div>
+
+                <div class="filter-group">
+                    <h3>체형</h3>
+                    <label class="filter-option"><input type="radio" name="body" value="all" checked> 전체</label>
+                    <label class="filter-option"><input type="radio" name="body" value="slim"> 슬림</label>
+                    <label class="filter-option"><input type="radio" name="body" value="average"> 표준</label>
+                    <label class="filter-option"><input type="radio" name="body" value="muscular"> 근육질 / 글래머</label>
+                    <label class="filter-option"><input type="radio" name="body" value="curvy"> 통통</label>
+                </div>
+
+                <div class="filter-group">
+                    <h3>총 가격대</h3>
+                    <label class="filter-option"><input type="radio" name="price" value="all" checked> 전체</label>
+                    <label class="filter-option"><input type="radio" name="price" value="under_10"> 10만원 이하</label>
+                    <label class="filter-option"><input type="radio" name="price" value="10_20"> 10 ~ 20만원</label>
+                    <label class="filter-option"><input type="radio" name="price" value="over_20"> 20만원 이상</label>
+                </div>
+
+                <button type="button" class="apply-btn" onclick="applyFilters()">추천받기</button>
+            </form>
+        </aside>
+
+        <!-- 결과 영역 -->
+        <main class="main-content">
+            <div class="results-header">
+                <h2>추천 착장</h2>
+                <span class="results-count">총 <span id="outfitCount">0</span>개의 스타일</span>
+            </div>
+            
+            <div class="outfit-grid" id="outfitGrid">
+                <!-- Javascript로 카드가 렌더링됩니다 -->
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // 목업 데이터 (착장 데이터)
+        const outfits = [
+            {
+                id: 1,
+                gender: 'male',
+                height: '170_179',
+                body: 'average',
+                priceRange: '10_20',
+                imageUrl: 'https://images.unsplash.com/photo-1617137968427-85924c800a22?auto=format&fit=crop&w=600&q=80',
+                totalPrice: 154000,
+                tags: ['남성', '170~179cm', '표준체형', '모던 캐주얼'],
+                items: [
+                    { category: '아우터', brand: 'MUSINSA STANDARD', name: '오버사이즈 블레이저', price: 69900 },
+                    { category: '상의', brand: 'ZARA', name: '베이직 코튼 티셔츠', price: 19000 },
+                    { category: '하의', brand: 'CONCEPTS1ONE', name: '와이드 슬랙스', price: 65100 }
+                ]
+            },
+            {
+                id: 2,
+                gender: 'female',
+                height: '160_169',
+                body: 'slim',
+                priceRange: 'under_10',
+                imageUrl: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=600&q=80',
+                totalPrice: 89000,
+                tags: ['여성', '160~169cm', '슬림체형', '미니멀'],
+                items: [
+                    { category: '원피스', brand: 'SAPPUN', name: '스퀘어넥 롱 원피스', price: 45000 },
+                    { category: '신발', brand: 'SHOOPEN', name: '클래식 로퍼', price: 44000 }
+                ]
+            },
+            {
+                id: 3,
+                gender: 'male',
+                height: 'over_180',
+                body: 'muscular',
+                priceRange: 'over_20',
+                imageUrl: 'https://images.unsplash.com/photo-1516826957135-700ede19c6ce?auto=format&fit=crop&w=600&q=80',
+                totalPrice: 285000,
+                tags: ['남성', '180cm 이상', '근육질', '스트릿'],
+                items: [
+                    { category: '아우터', brand: 'COVERNAT', name: '리버서블 플리스 자켓', price: 129000 },
+                    { category: '상의', brand: 'THISISNEVERTHAT', name: '로고 후디', price: 82000 },
+                    { category: '하의', brand: 'LEVIS', name: '501 오리지널 핏', price: 74000 }
+                ]
+            },
+            {
+                id: 4,
+                gender: 'female',
+                height: 'under_160',
+                body: 'curvy',
+                priceRange: '10_20',
+                imageUrl: 'https://images.unsplash.com/photo-1550614000-4b95d466f081?auto=format&fit=crop&w=600&q=80',
+                totalPrice: 135000,
+                tags: ['여성', '160cm 미만', '통통체형', '캐주얼'],
+                items: [
+                    { category: '상의', brand: 'POLO RALPH LAUREN', name: '케이블 니트 스웨터', price: 95000 },
+                    { category: '하의', brand: 'GIRLS RULE', name: 'A라인 롱 스커트', price: 40000 }
+                ]
+            },
+            {
+                id: 5,
+                gender: 'male',
+                height: '160_169',
+                body: 'slim',
+                priceRange: 'under_10',
+                imageUrl: 'https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?auto=format&fit=crop&w=600&q=80',
+                totalPrice: 95000,
+                tags: ['남성', '160~169cm', '슬림체형', '댄디'],
+                items: [
+                    { category: '상의', brand: 'SPAO', name: '옥스퍼드 셔츠', price: 29900 },
+                    { category: '상의', brand: '8SECONDS', name: '브이넥 니트 베스트', price: 25100 },
+                    { category: '하의', brand: 'SPAO', name: '테이퍼드 코튼 팬츠', price: 40000 }
+                ]
+            },
+            {
+                id: 6,
+                gender: 'female',
+                height: '170_179',
+                body: 'average',
+                priceRange: 'over_20',
+                imageUrl: 'https://images.unsplash.com/photo-1485230895905-eb573ed522f3?auto=format&fit=crop&w=600&q=80',
+                totalPrice: 320000,
+                tags: ['여성', '170~179cm', '표준체형', '페미닌'],
+                items: [
+                    { category: '아우터', brand: 'STUDIO TOMBOY', name: '오버핏 트렌치 코트', price: 250000 },
+                    { category: '상의', brand: 'ZARA', name: '실크 블라우스', price: 45000 },
+                    { category: '하의', brand: 'H&M', name: '하이웨이스트 슬랙스', price: 25000 }
+                ]
+            }
+        ];
+
+        // 숫자 콤마 포맷팅 함수
+        function formatNumber(num) {
+            return num.toString().replace(/\\B(?=(\\d{3})+(?!\\d))/g, ",");
+        }
+
+        // 아이템 렌더링 함수
+        function renderItems(items) {
+            return items.map(item => `
+                <li class="clothing-item">
+                    <div>
+                        <span class="item-brand">[${item.brand}]</span>
+                        <span class="item-name">${item.name}</span>
+                    </div>
+                    <span class="item-price">\\${formatNumber(item.price)}</span>
+                </li>
+            `).join('');
+        }
+
+        // 착장 카드 렌더링 함수
+        function renderOutfits(data) {
+            const grid = document.getElementById('outfitGrid');
+            const count = document.getElementById('outfitCount');
+            
+            count.textContent = data.length;
+            
+            if (data.length === 0) {
+                grid.innerHTML = `
+                    <div class="no-results">
+                        <p>선택하신 조건에 맞는 착장 추천이 없습니다.</p>
+                        <p style="font-size: 0.9rem; margin-top: 10px;">조건을 변경하여 다시 검색해보세요.</p>
+                    </div>`;
+                return;
+            }
+
+            grid.innerHTML = data.map(outfit => `
+                <div class="outfit-card">
+                    <img src="${outfit.imageUrl}" alt="Model wearing outfit" class="outfit-image">
+                    <div class="outfit-info">
+                        <div class="tags">
+                            ${outfit.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                        </div>
+                        <ul class="clothing-items">
+                            ${renderItems(outfit.items)}
+                        </ul>
+                        <div class="total-price">
+                            <span class="total-label">총 코디 가격</span>
+                            <span class="total-amount">\\${formatNumber(outfit.totalPrice)}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 필터 적용 로직
+        function applyFilters() {
+            const form = document.getElementById('filterForm');
+            
+            const selectedGender = form.gender.value;
+            const selectedHeight = form.height.value;
+            const selectedBody = form.body.value;
+            const selectedPrice = form.price.value;
+
+            const filteredOutfits = outfits.filter(outfit => {
+                const matchGender = selectedGender === 'all' || outfit.gender === selectedGender;
+                const matchHeight = selectedHeight === 'all' || outfit.height === selectedHeight;
+                const matchBody = selectedBody === 'all' || outfit.body === selectedBody;
+                const matchPrice = selectedPrice === 'all' || outfit.priceRange === selectedPrice;
+                
+                return matchGender && matchHeight && matchBody && matchPrice;
+            });
+
+            renderOutfits(filteredOutfits);
+        }
+
+        // 초기 렌더링
+        document.addEventListener('DOMContentLoaded', () => {
+            renderOutfits(outfits);
+        });
+    </script>
+</body>
+</html>
+"""
+
+with open("/mnt/data/stylepicker_recommendation.html", "w", encoding="utf-8") as f:
+    f.write(html_content)
+
+print("[file-tag: stylepicker_recommendation.html]")
